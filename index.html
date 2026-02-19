@@ -22,6 +22,16 @@
       width: 100%;
       height: auto;
     }
+
+    @font-face {
+      font-family: "Angel-Wish";
+      src: url("./fonts/Angel-Wish.woff2") format("woff2");
+    }
+
+    @font-face {
+      font-family: "Javanese-Text-Regular";
+      src: url("./fonts/Javanese-Text-Regular.woff2") format("woff2");
+    }
   </style>
 </head>
 
@@ -222,6 +232,10 @@
         const svgDoc = parser.parseFromString(svgText, "image/svg+xml");
         const svgElement = svgDoc.querySelector("svg");
 
+        // ----- STRIP ALL <style> TAGS -----
+        svgElement.querySelectorAll("style").forEach(styleEl => styleEl.remove());
+
+        // ----- RE-ID ALL ELEMENTS -----
         svgDoc.querySelectorAll("[id]").forEach(el => {
           const oldId = el.id;
           const newId = prefix + oldId;

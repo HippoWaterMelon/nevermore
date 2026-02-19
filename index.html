@@ -8,7 +8,6 @@
     body {
       background: black;
       color: white;
-      font-family: 'Javanese-Text-Regular', serif;
     }
 
     .thingy {
@@ -23,23 +22,15 @@
       width: 100%;
       height: auto;
     }
-
-    @font-face {
-      font-family: "Angel-Wish";
-      src: url("./fonts/Angel-Wish.woff2") format("woff2");
-    }
-
-    @font-face {
-      font-family: "Javanese-Text-Regular";
-      src: url("./fonts/Javanese-Text-Regular.woff2") format("woff2");
-    }
   </style>
 </head>
 
 <body>
+  <h1>nevermore spectre box thing generator thing</h1>
+
+  <p>sorry ios users you don't get the fonts because literally nothing could fix them</p>
+
   <div>
-    <h1>nevermore spectre box thing generator thing</h1>
-    
     <div id="ben-container" style="display:none" class="thingy"></div>
     <div id="neu-container" class="thingy"></div>
     <div id="mal-container" style="display:none" class="thingy"></div>
@@ -235,10 +226,6 @@
         const svgDoc = parser.parseFromString(svgText, "image/svg+xml");
         const svgElement = svgDoc.querySelector("svg");
 
-        // ----- STRIP ALL <style> TAGS -----
-        svgElement.querySelectorAll("style").forEach(styleEl => styleEl.remove());
-
-        // ----- RE-ID ALL ELEMENTS -----
         svgDoc.querySelectorAll("[id]").forEach(el => {
           const oldId = el.id;
           const newId = prefix + oldId;

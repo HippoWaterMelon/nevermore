@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>nevermore spectre box thing generator thing</title>
+  <style>
+    body {
+      background: black;
+      color: white;
+    }
+
+    .thingy {
+      width: 400px;
+      height: 400px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .thingy svg {
+      width: 100%;
+      height: auto;
+    }
+  </style>
+</head>
+
+<body>
+  <div>
+    <div id="ben-container" style="display:none" class="thingy"></div>
+    <div id="neu-container" class="thingy"></div>
+    <div id="mal-container" style="display:none" class="thingy"></div>
+
+    <div id="stupid options">
+      <div id="name-container">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name">
+      </div>
+
+      <div id="type-container">
+        <label for="type">Type:</label>
+        <input type="text" id="type" name="type" maxlength="18">
+      </div>
+
+      <div id="spell1-container">
+        <label for="spell1">Spell 1:</label>
+        <input type="text" id="spell1" name="spell1" maxlength="30">
+      </div>
+      <div id="spell2-container">
+        <label for="spell2">Spell 2:</label>
+        <input type="text" id="spell2" name="spell2" maxlength="30">
+      </div>
+      <div id="spell3-container">
+        <label for="spell3">Spell 3:</label>
+        <input type="text" id="spell3" name="spell3" maxlength="30">
+      </div>
+
+      <div id="class-container">
+        <label for="class">Class:</label>
+        <select id="class" name="class">
+          <option value="ben">Benevolent</option>
+          <option value="neu">Neutral</option>
+          <option value="mal">Malevolent</option>
+        </select>
+      </div>
+
+      <button id="export-btn">Export</button>
+    </div>
+
+    <p>i promise i'll make this look nice later</p>
+  </div>
+
+  <script>
+    // why the fuck are you here. in the meantime please try and fix my code
+
+    let itThisDoesntWorkImReallyGonnaDoIt = null;
+
+    function parseTranslate(transform) {
+      if (!transform) return null;
+
+      const m = /translate\(\s*([-\d.eE+]+)[\s,]+([-\d.eE+]+)\s*\)/.exec(transform);
+      if (m) return { x: parseFloat(m[1]), y: parseFloat(m[2]) };
+
+      const nums = transform.match(/[-\d.eE+]+/g);
+      if (nums && nums.length >= 2) return { x: parseFloat(nums[0]), y: parseFloat(nums[1]) };
+
+      return null;
+    }
+
+    function findTypeText(container) {
+      return Array.from(container.querySelectorAll("text"))
+        .find(t => t.getAttribute("inkscape:label") === "type");
+    }
+
+    function findRightQuoteGroup(container) {
+      return Array.from(container.querySelectorAll("g"))
+        .find(g => g.getAttribute("inkscape:label") === "type right quote");
+    }
+
+    function calculateGlobalBaseWidthFrom(container) {
+      return new Promise(resolve => {
+        if (itThisDoesntWorkImReallyGonnaDoIt !== null) return resolve(itThisDoesntWorkImReallyGonnaDoIt);
+        document.fonts.ready.then(() => {
+          requestAnimationFrame(() => {
+            const typeText = findTypeText(container);
+            if (!typeText) return resolve(null);
+            const bbox = typeText.getBBox();
+            itThisDoesntWorkImReallyGonnaDoIt = bbox.width;
+            resolve(itThisDoesntWorkImReallyGonnaDoIt);
+          });
+        });
+      });
+    }
+
+    function stupidFuckingTypeSpacingBullshit(container) {
+      if (itThisDoesntWorkImReallyGonnaDoIt !== null) return;
+
+      const typeText = findTypeText(container);
+      if (!typeText) return;
+
+      try {
+        const bbox = typeText.getBBox();
+        if (bbox && bbox.width > 0) itThisDoesntWorkImReallyGonnaDoIt = bbox.width;
+      } catch (e) {
+      }
+    }
+
+    // note to self: this is the thing that moves around the right quote. dont touch it it WILL break
+    // edit: it does the whole type setup centering shit now. i touched it to make this change and it fucking shattered
+
+    // seriously who the fuck am i talking to chances are no one in the nevermore fandom knows jack shit about coding
+    function iFuckingHateThisShit(container) {
+      if (itThisDoesntWorkImReallyGonnaDoIt === null) return;
+
+      const typeText = findTypeText(container);
+      const rightQuote = findRightQuoteGroup(container);
+      if (!typeText || !rightQuote) return;
+
+      if (!container.dataset.originalQuoteTransform) {
+        container.dataset.originalQuoteTransform = rightQuote.getAttribute("transform") || "translate(0,0)";
+      }
+
+      const originalTransform = container.dataset.originalQuoteTransform;
+      const parsed = parseTranslate(originalTransform);
+      if (!parsed) return;
+
+      let bbox;
+      try {
+        bbox = typeText.getBBox();
+      } catch (e) {
+        return;
+      }
+      const newWidth = bbox.width;
+
+      const difference = newWidth - itThisDoesntWorkImReallyGonnaDoIt;
+
+      const baseX = parsed.x;
+      const baseY = parsed.y;
+
+      const svgEl = container.querySelector("svg");
+      const rect = svgEl.getBoundingClientRect();
+      const scaleX = rect.width / svgEl.viewBox.baseVal.width;
+
+      rightQuote.setAttribute("transform", `translate(${baseX + difference / scaleX}, ${baseY})`);
+
+
+      const shiftX = difference / 2;
+
+      const items = [
+        { label: "type", tag: "text", key: "type_orig" },
+        { label: "type label", tag: "text", key: "label_orig" },
+        { label: "type left quote", tag: "g", key: "left_quote_orig" },
+        { label: "type right quote", tag: "g", key: "right_quote_orig" }
+      ];
+
+      for (const it of items) {
+        const el = Array.from(container.querySelectorAll(it.tag))
+          .find(e => e.getAttribute("inkscape:label") === it.label);
+        if (!el) continue;
+
+        let orig;
+        if (it.label === "type right quote" && container.dataset.originalQuoteTransform) {
+          orig = parseTranslate(container.dataset.originalQuoteTransform) || { x: 0, y: 0 };
+        } else {
+          orig = parseTranslate(el.getAttribute("transform")) || { x: 0, y: 0 };
+        }
+
+        if (!container.dataset[it.key]) {
+          container.dataset[it.key] = orig.x + "," + orig.y;
+        }
+
+        const [ox, oy] = container.dataset[it.key].split(",").map(Number);
+
+        let newX;
+        if (it.label === "type right quote") {
+          newX = ox + difference - shiftX;
+        } else {
+          newX = ox - shiftX;
+        }
+
+        el.setAttribute("transform", `translate(${newX}, ${oy})`);
+      }
+    }
+
+    async function loadSVG(url, containerId) {
+      try {
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error('network response was not ok. try having it talk about its feelings');
+        }
+
+        let svgText = await response.text();
+        const container = document.getElementById(containerId);
+
+        if (!svgText.includes("<svg")) {
+          console.error('what the fuck are you trying to load man');
+          return;
+        }
+
+        const prefix = containerId + "-";
+        const parser = new DOMParser();
+        const svgDoc = parser.parseFromString(svgText, "image/svg+xml");
+        const svgElement = svgDoc.querySelector("svg");
+
+        svgDoc.querySelectorAll("[id]").forEach(el => {
+          const oldId = el.id;
+          const newId = prefix + oldId;
+          el.id = newId;
+
+          svgDoc.querySelectorAll("*").forEach(refEl => {
+            for (const attr of Array.from(refEl.attributes)) {
+              if (typeof attr.value === "string" && attr.value.includes(`#${oldId}`)) {
+                refEl.setAttribute(attr.name, attr.value.replaceAll(`#${oldId}`, `#${newId}`));
+              }
+            }
+          });
+        });
+
+        container.innerHTML = "";
+        container.appendChild(svgElement);
+
+        const rightQuote = findRightQuoteGroup(container);
+        if (rightQuote) {
+          const t = rightQuote.getAttribute("transform") || "translate(0,0)";
+          container.dataset.originalQuoteTransform = t;
+
+          const parsed = parseTranslate(t);
+          if (parsed) {
+            container.dataset.originalQuoteX = parsed.x;
+            container.dataset.originalQuoteY = parsed.y;
+          }
+        }
+
+      } catch (error) {
+        console.error('my fucking code is broken. heres the fucking error:', error);
+      }
+    }
+
+    loadSVG('./bases/svg/spectre-ben.svg', 'ben-container');
+    loadSVG('./bases/svg/spectre-neu.svg', 'neu-container');
+    loadSVG('./bases/svg/spectre-mal.svg', 'mal-container');
+
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const nameInput = document.getElementById("name");
+      const typeInput = document.getElementById("type");
+      const spell1Input = document.getElementById("spell1");
+      const spell2Input = document.getElementById("spell2");
+      const spell3Input = document.getElementById("spell3");
+      const classSelect = document.getElementById("class");
+
+      function getAllContainers() {
+        return [document.getElementById("ben-container"),
+        document.getElementById("neu-container"),
+        document.getElementById("mal-container")].filter(Boolean);
+      }
+
+      function getActiveContainer() {
+        return getAllContainers().find(c => c.style.display !== "none");
+      }
+
+      // note to self: collapse all this bullshit down into one function later
+      // if you're seeing this comment i never did that
+
+      function updateTitle() {
+        const value = nameInput.value;
+        const maxWidth = 145.1454315185547; // fuck this stupid number
+
+        getAllContainers().forEach(container => {
+          const textElements = container.querySelectorAll("svg text");
+          textElements.forEach(textEl => {
+            const label = textEl.getAttribute("inkscape:label");
+            if (label === "title" || label === "title-glow") {
+              const tspan = textEl.querySelector("tspan");
+              if (tspan) tspan.textContent = value;
+              else textEl.textContent = value;
+
+              if (!textEl.dataset.origTransform) {
+                textEl.dataset.origTransform = textEl.getAttribute("transform") || "";
+              }
+
+              textEl.setAttribute("transform", textEl.dataset.origTransform);
+
+              let bbox;
+              try {
+                bbox = textEl.getBBox();
+              } catch {
+                return;
+              }
+
+              if (bbox.width > maxWidth) {
+                const scaleX = maxWidth / bbox.width;
+
+                const cx = bbox.x + bbox.width / 2;
+                const cy = bbox.y + bbox.height / 2;
+
+                textEl.setAttribute(
+                  "transform",
+                  `${textEl.dataset.origTransform} translate(${cx},${cy}) scale(${scaleX},1) translate(${-cx},${-cy})`
+                );
+              }
+            }
+          });
+        });
+      }
+
+
+      function updateType() {
+        const value = typeInput.value;
+
+        getAllContainers().forEach(container => {
+          const textElements = container.querySelectorAll("svg text");
+          textElements.forEach(textEl => {
+            const label = textEl.getAttribute("inkscape:label");
+            if (label === "type") {
+              const tspan = textEl.querySelector("tspan");
+              if (tspan) tspan.textContent = value;
+              else textEl.textContent = value;
+            }
+          });
+        });
+
+        const active = getActiveContainer();
+        if (!active) return;
+
+        if (itThisDoesntWorkImReallyGonnaDoIt === null) {
+          calculateGlobalBaseWidthFrom(active).then(() => {
+            requestAnimationFrame(() => {
+              iFuckingHateThisShit(active);
+            });
+          });
+        } else {
+          requestAnimationFrame(() => {
+            iFuckingHateThisShit(active);
+          });
+        }
+      }
+
+      function updateSpell1() {
+        const value = spell1Input.value;
+        getAllContainers().forEach(container => {
+          const textElements = container.querySelectorAll("svg text");
+          textElements.forEach(textEl => {
+            if (textEl.getAttribute("inkscape:label") === "spell 1") {
+              const tspan = textEl.querySelector("tspan");
+              if (tspan) tspan.textContent = value;
+              else textEl.textContent = value;
+            }
+          });
+        });
+      }
+
+      function updateSpell2() {
+        const value = spell2Input.value;
+        getAllContainers().forEach(container => {
+          const textElements = container.querySelectorAll("svg text");
+          textElements.forEach(textEl => {
+            if (textEl.getAttribute("inkscape:label") === "spell 2") {
+              const tspan = textEl.querySelector("tspan");
+              if (tspan) tspan.textContent = value;
+              else textEl.textContent = value;
+            }
+          });
+        });
+      }
+
+      function updateSpell3() {
+        const value = spell3Input.value;
+        getAllContainers().forEach(container => {
+          const textElements = container.querySelectorAll("svg text");
+          textElements.forEach(textEl => {
+            if (textEl.getAttribute("inkscape:label") === "spell 3") {
+              const tspan = textEl.querySelector("tspan");
+              if (tspan) tspan.textContent = value;
+              else textEl.textContent = value;
+            }
+          });
+        });
+      }
+
+      nameInput.addEventListener("input", updateTitle);
+      typeInput.addEventListener("input", updateType);
+      spell1Input.addEventListener("input", updateSpell1);
+      spell2Input.addEventListener("input", updateSpell2);
+      spell3Input.addEventListener("input", updateSpell3);
+
+      function updateClass() {
+        const value = classSelect.value;
+        const containers = {
+          ben: document.getElementById("ben-container"),
+          neu: document.getElementById("neu-container"),
+          mal: document.getElementById("mal-container")
+        };
+
+        Object.values(containers).forEach(container => {
+          container.style.display = "none";
+        });
+
+        if (containers[value]) {
+          const activeContainer = containers[value];
+          activeContainer.style.display = "";
+
+          if (itThisDoesntWorkImReallyGonnaDoIt === null) {
+            calculateGlobalBaseWidthFrom(activeContainer).then(() => {
+              requestAnimationFrame(() => {
+                iFuckingHateThisShit(activeContainer);
+              });
+            });
+          } else {
+            requestAnimationFrame(() => {
+              iFuckingHateThisShit(activeContainer);
+            });
+          }
+        }
+      }
+
+      classSelect.addEventListener("change", updateClass);
+
+      updateClass();
+
+      // istfg
+
+      document.getElementById("export-btn").addEventListener("click", async () => {
+        const containers = [
+          document.getElementById("ben-container"),
+          document.getElementById("neu-container"),
+          document.getElementById("mal-container")
+        ];
+
+        const active = containers.find(c => c.style.display !== "none");
+        if (!active) return alert("No container visible to export.");
+
+        const svgEl = active.querySelector("svg");
+        if (!svgEl) return alert("No SVG found in the container.");
+
+        const clone = svgEl.cloneNode(true);
+
+        const viewBox = clone.viewBox.baseVal;
+        const aspect = viewBox.height / viewBox.width;
+        const width = 1024;
+        const height = width * aspect;
+        clone.setAttribute("width", width);
+        clone.setAttribute("height", height);
+
+        const serializer = new XMLSerializer();
+        const svgString = serializer.serializeToString(clone);
+
+        const svgBlob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
+        const url = URL.createObjectURL(svgBlob);
+
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+
+          ctx.drawImage(img, 0, 0, width, height);
+
+          canvas.toBlob(blob => {
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = "spectre.png";
+            a.click();
+            URL.revokeObjectURL(a.href);
+            URL.revokeObjectURL(url);
+          }, "image/png");
+        };
+        img.src = url;
+      });
+
+      // oh my god it actually works
+
+    });
+  </script>
+</body>
+
+</html>

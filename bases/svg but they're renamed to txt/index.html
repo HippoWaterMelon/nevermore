@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>nevermore spectre box thing generator thing</title>
+    <style>
+    </style>
+</head>
+
+<body>
+    <div>
+        <div id="svg-container"></div>
+    </div>
+
+    <script>
+        async function loadSVG(url, containerId) {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const svgText = await response.text();
+                const container = document.getElementById(containerId);
+
+                // Security check: ensure the fetched content is indeed an SVG
+                if (svgText.includes('<svg')) {
+                    container.innerHTML = svgText;
+                } else {
+                    console.error('Fetched content is not a valid SVG.');
+                }
+
+            } catch (error) {
+                console.error('There has been a problem with your fetch operation:', error);
+            }
+        }
+
+        // Call the function with your SVG's URL and the container's ID
+        loadSVG('./bases/svg/spectre-ben.svg', 'svg-container');
+    </script>
+</body>
+
+</html>

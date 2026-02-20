@@ -39,25 +39,25 @@
     <div id="stupid options">
       <div id="name-container">
         <label for="name">Name:</label>
-        <input type="text" id="name" name="name">
+        <input type="text" id="name" name="name" value="Name">
       </div>
 
       <div id="type-container">
         <label for="type">Type:</label>
-        <input type="text" id="type" name="type" maxlength="18">
+        <input type="text" id="type" name="type" maxlength="18" value="Type">
       </div>
 
       <div id="spell1-container">
         <label for="spell1">Spell 1:</label>
-        <input type="text" id="spell1" name="spell1" maxlength="30">
+        <input type="text" id="spell1" name="spell1" maxlength="30" value="Spell 1">
       </div>
       <div id="spell2-container">
         <label for="spell2">Spell 2:</label>
-        <input type="text" id="spell2" name="spell2" maxlength="30">
+        <input type="text" id="spell2" name="spell2" maxlength="30" value="Spell 2">
       </div>
       <div id="spell3-container">
         <label for="spell3">Spell 3:</label>
-        <input type="text" id="spell3" name="spell3" maxlength="30">
+        <input type="text" id="spell3" name="spell3" maxlength="30" value="Spell 3">
       </div>
 
       <div id="class-container">
@@ -388,7 +388,7 @@
       }
 
       function updateSpell1() {
-        const value = spell1Input.value;
+        const value = spell1Input.value.toLowerCase();
         getAllContainers().forEach(container => {
           const textElements = container.querySelectorAll("svg text");
           textElements.forEach(textEl => {
@@ -402,7 +402,7 @@
       }
 
       function updateSpell2() {
-        const value = spell2Input.value;
+        const value = spell2Input.value.toLowerCase();
         getAllContainers().forEach(container => {
           const textElements = container.querySelectorAll("svg text");
           textElements.forEach(textEl => {
@@ -416,7 +416,7 @@
       }
 
       function updateSpell3() {
-        const value = spell3Input.value;
+        const value = spell3Input.value.toLowerCase();
         getAllContainers().forEach(container => {
           const textElements = container.querySelectorAll("svg text");
           textElements.forEach(textEl => {

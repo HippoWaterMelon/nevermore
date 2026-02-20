@@ -28,7 +28,8 @@
 <body>
   <h1>nevermore spectre box thing generator thing</h1>
 
-  <p>sorry ios users you don't get the fonts because literally nothing could fix them</p>
+  <p>sorry ios/ipados users you don't get the fonts because literally nothing could fix them</p>
+  <p>if you seriously need something just ask me and i'll make it for you</p>
 
   <div>
     <div id="ben-container" style="display:none" class="thingy"></div>
@@ -266,6 +267,14 @@
 
 
     document.addEventListener("DOMContentLoaded", () => {
+      const notificationThing =
+        /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+        (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+
+      if (notificationThing) {
+        alert("hey so apple hates me and refuses to load the custom fonts so just please take that into account");
+      }
+
       const nameInput = document.getElementById("name");
       const typeInput = document.getElementById("type");
       const spell1Input = document.getElementById("spell1");
@@ -331,6 +340,17 @@
 
       function updateType() {
         const value = typeInput.value;
+        const active = getActiveContainer();
+        let prevWidth = null;
+
+        if (active) {
+          const typeTextBefore = findTypeText(active);
+          if (typeTextBefore) {
+            try {
+              prevWidth = typeTextBefore.getBBox().width;
+            } catch { }
+          }
+        }
 
         getAllContainers().forEach(container => {
           const textElements = container.querySelectorAll("svg text");
@@ -344,8 +364,15 @@
           });
         });
 
-        const active = getActiveContainer();
         if (!active) return;
+
+        if (itThisDoesntWorkImReallyGonnaDoIt === null && prevWidth !== null) {
+          itThisDoesntWorkImReallyGonnaDoIt = prevWidth;
+          requestAnimationFrame(() => {
+            iFuckingHateThisShit(active);
+          });
+          return;
+        }
 
         if (itThisDoesntWorkImReallyGonnaDoIt === null) {
           calculateGlobalBaseWidthFrom(active).then(() => {
@@ -423,6 +450,8 @@
         if (containers[value]) {
           const activeContainer = containers[value];
           activeContainer.style.display = "";
+
+          requestAnimationFrame(updateTitle);
 
           if (itThisDoesntWorkImReallyGonnaDoIt === null) {
             calculateGlobalBaseWidthFrom(activeContainer).then(() => {

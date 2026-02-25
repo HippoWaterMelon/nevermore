@@ -22,14 +22,29 @@
       width: 100%;
       height: auto;
     }
+
+    @font-face {
+      font-family: 'Angel-Wish';
+      src: url('./fonts/Angel-Wish.woff2') format('woff2');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: 'Javanese-Text-Regular';
+      src: url('./fonts/Javanese-Text-Regular.woff2') format('woff2');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
   </style>
 </head>
 
 <body>
   <h1>nevermore spectre box thing generator thing</h1>
 
-  <p>sorry ios/ipados users you don't get the fonts because literally nothing could fix them</p>
-  <p>if you seriously need something just ask me and i'll make it for you</p>
+  <p>I FIXED THE FONTS LETS FUCKING GOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO !!!!!!!!!!!!!!!!!</p>
 
   <div>
     <div id="ben-container" style="display:none" class="thingy"></div>
@@ -207,6 +222,50 @@
       }
     }
 
+    async function injectFontsIntoSVG(svgDoc, svgElement) {
+      const angel = await fontToBase64("./fonts/Angel-Wish.woff2");
+      const javanese = await fontToBase64("./fonts/Javanese-Text-Regular.woff2");
+
+      const style = svgDoc.createElementNS("http://www.w3.org/2000/svg", "style");
+      style.textContent = `
+@font-face {
+  font-family: 'Angel-Wish';
+  src: url(data:font/woff2;base64,${angel}) format('woff2');
+}
+@font-face {
+  font-family: 'Javanese-Text-Regular';
+  src: url(data:font/woff2;base64,${javanese}) format('woff2');
+}
+`;
+      svgElement.prepend(style);
+    }
+
+    function enforceSVGFonts(container) {
+      const texts = container.querySelectorAll("svg text");
+
+      texts.forEach(textEl => {
+        const label = textEl.getAttribute("inkscape:label");
+
+        if (label === "title" || label === "title-glow") {
+          textEl.style.fontFamily = "";
+          textEl.setAttribute("font-family", "Angel-Wish");
+        } else {
+          textEl.style.fontFamily = "";
+          textEl.setAttribute("font-family", "Javanese-Text-Regular");
+        }
+      });
+    }
+
+    async function fontToBase64(url) {
+      const res = await fetch(url);
+      const buf = await res.arrayBuffer();
+      let binary = "";
+      const bytes = new Uint8Array(buf);
+      const len = bytes.byteLength;
+      for (let i = 0; i < len; i++) binary += String.fromCharCode(bytes[i]);
+      return btoa(binary);
+    }
+
     async function loadSVG(url, containerId) {
       try {
         const response = await fetch(url);
@@ -214,7 +273,7 @@
           throw new Error('network response was not ok. try having it talk about its feelings');
         }
 
-        let svgText = await response.text();
+        const svgText = await response.text();
         const container = document.getElementById(containerId);
 
         if (!svgText.includes("<svg")) {
@@ -222,11 +281,40 @@
           return;
         }
 
-        const prefix = containerId + "-";
         const parser = new DOMParser();
         const svgDoc = parser.parseFromString(svgText, "image/svg+xml");
         const svgElement = svgDoc.querySelector("svg");
 
+        svgDoc.querySelectorAll("style").forEach(el => {
+          el.remove();
+        });
+
+        const angelRes = await fetch("./fonts/Angel-Wish.woff2");
+        const angelBuf = await angelRes.arrayBuffer();
+        let angelBin = "";
+        new Uint8Array(angelBuf).forEach(b => angelBin += String.fromCharCode(b));
+        const angelB64 = btoa(angelBin);
+
+        const javaRes = await fetch("./fonts/Javanese-Text-Regular.woff2");
+        const javaBuf = await javaRes.arrayBuffer();
+        let javaBin = "";
+        new Uint8Array(javaBuf).forEach(b => javaBin += String.fromCharCode(b));
+        const javaB64 = btoa(javaBin);
+
+        const style = svgDoc.createElementNS("http://www.w3.org/2000/svg", "style");
+        style.textContent = `
+@font-face {
+  font-family: 'Angel wish';
+  src: url(data:font/woff2;base64,${angelB64}) format('woff2');
+}
+@font-face {
+  font-family: 'Javanese Text';
+  src: url(data:font/woff2;base64,${javaB64}) format('woff2');
+}
+`;
+        svgElement.prepend(style);
+
+        const prefix = containerId + "-";
         svgDoc.querySelectorAll("[id]").forEach(el => {
           const oldId = el.id;
           const newId = prefix + oldId;
@@ -243,6 +331,7 @@
 
         container.innerHTML = "";
         container.appendChild(svgElement);
+        enforceSVGFonts(container);
 
         const rightQuote = findRightQuoteGroup(container);
         if (rightQuote) {
